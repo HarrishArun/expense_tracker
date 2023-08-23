@@ -19,8 +19,35 @@ class _expensesState extends State<expenses> {
   void _openexoensesoverlay() {
     showModalBottomSheet(
       context: context,
-      builder: (ctx) => newexpenses(),
+      builder: (ctx) => newexpenses(
+        onaddexpense: _addexpense,
+      ),
     );
+  }
+
+  void _addexpense(Expense expense) {
+    setState(() {
+      _registeredexpenses.add(expense);
+    });
+  }
+
+  void _removeexpense(Expense expense) {
+    final expenseindex = _registeredexpenses.indexOf(expense);
+    setState(() {
+      _registeredexpenses.remove(expense);
+    });
+    ScaffoldMessenger.of(context).clearSnackBars();
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+      content: Text("Expense Removed"),
+      duration: Duration(seconds: 3),
+      action: SnackBarAction(
+          label: "Undo",
+          onPressed: () {
+            setState(() {
+              _registeredexpenses.insert(expenseindex, expense);
+            });
+          }),
+    ));
   }
 
   @override
@@ -42,9 +69,11 @@ class _expensesState extends State<expenses> {
       body: Column(
         children: [
           Expanded(
-            child: Expenseslist(_registeredexpenses),
-            // height: 500,
-          )
+              child: _registeredexpenses.isNotEmpty
+                  ? Expenseslist(_registeredexpenses, _removeexpense)
+                  : Center(child: (Text("Add Expeneses!")))
+              // height: 500,
+              )
         ],
       ),
     );

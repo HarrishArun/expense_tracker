@@ -2,7 +2,8 @@ import 'package:expense_tracker/models/expense_model.dart';
 import 'package:flutter/material.dart';
 
 class newexpenses extends StatefulWidget {
-  const newexpenses({super.key});
+  final void Function(Expense expense) onaddexpense;
+  const newexpenses({super.key, required this.onaddexpense});
 
   @override
   State<newexpenses> createState() => _newexpensesState();
@@ -11,7 +12,7 @@ class newexpenses extends StatefulWidget {
 class _newexpensesState extends State<newexpenses> {
   final _titlecontroller = TextEditingController();
   final _amountcontoller = TextEditingController();
-  DateTime? _selecteddate;
+  DateTime? _selecteddate = DateTime.now();
   late Cateogry _selectedcateogry = Cateogry.travel;
   void _showdatepicker() async {
     final now = DateTime.now();
@@ -21,6 +22,31 @@ class _newexpensesState extends State<newexpenses> {
     setState(() {
       _selecteddate = pickeddate;
     });
+  }
+
+  void _submitexpensesdata() {
+    final enteredamount = double.tryParse(_amountcontoller.text);
+    final amountisinvalid = enteredamount == null || enteredamount <= 0;
+    if (_titlecontroller.text.trim().isEmpty || amountisinvalid) {
+      showDialog(
+          context: context,
+          builder: (ctx) => AlertDialog(
+                title: Text("Invalid input"),
+                content: Text("Enter Valid Data"),
+                actions: [
+                  TextButton(
+                      onPressed: () {
+                        Navigator.pop(ctx);
+                      },
+                      child: Text("Okay"))
+                ],
+              ));
+      return;
+      //error
+    }
+    widget.onaddexpense(Expense(_titlecontroller.text, enteredamount,
+        _selecteddate!, _selectedcateogry));
+    Navigator.pop(context);
   }
 
   @override
@@ -61,9 +87,7 @@ class _newexpensesState extends State<newexpenses> {
                   child: Row(
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: [
-                  Text(_selecteddate == null
-                      ? "Select Date"
-                      : formatter.format(_selecteddate!)),
+                  Text(formatter.format(_selecteddate!)),
                   IconButton(
                       onPressed: () {
                         _showdatepicker();
@@ -95,7 +119,11 @@ class _newexpensesState extends State<newexpenses> {
                     Navigator.pop(context);
                   },
                   child: Text("Close")),
-              ElevatedButton(onPressed: () {}, child: Text("Save"))
+              ElevatedButton(
+                  onPressed: () {
+                    _submitexpensesdata();
+                  },
+                  child: Text("Save"))
             ],
           )
         ],
