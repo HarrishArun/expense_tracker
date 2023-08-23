@@ -1,3 +1,4 @@
+import 'package:expense_tracker/widgets/expenser.dart';
 import 'package:flutter/material.dart';
 import 'package:uuid/uuid.dart';
 import "package:intl/intl.dart";
@@ -26,4 +27,21 @@ class Expense {
   }
 
   Expense(this.title, this.amount, this.date, this.cateogry) : id = uuid.v4();
+}
+
+class Expensebucket {
+  final Cateogry cateogry;
+  final List<Expense> expenses;
+  Expensebucket(this.cateogry, this.expenses);
+  Expensebucket.forcateogry(List<Expense> allexpense, this.cateogry)
+      : expenses = allexpense
+            .where((expenses) => expenses.cateogry == cateogry)
+            .toList();
+  double get totalExpeneses {
+    double sum = 0;
+    for (final expense in expenses) {
+      sum += expense.amount;
+    }
+    return sum;
+  }
 }
